@@ -121,18 +121,19 @@
 (defun message-loop ()
   (with-alien ((msg (struct msg)))
               (defvar result)
-              (loop do (setf result (getmessage (addr msg) nil 0 0))
-                    until (zerop result)
+              (loop until (zerop (getmessage (addr msg) nil 0 0))
                     do (progn
                          (translatemessage (addr msg))
                          (dispatchmessage (addr msg))))
-              (slot msg 'wparam)))
+              ;(slot msg 'wparam)
+              ))
 
 (defun main ()
   (register-window-class)
   (create-window)
   (message-loop)
-  (unregister-window-class))
+  (unregister-window-class)
+  (SB-EXT:QUIT))
 
 (main)
 ;;; EOF
