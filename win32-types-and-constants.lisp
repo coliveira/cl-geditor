@@ -15,8 +15,26 @@
 (define-alien-type hcursor (* (struct nil)))
 (define-alien-type hbrush (* (struct nil)))
 (define-alien-type hmenu (* (struct nil)))
+(define-alien-type hbitmap (* (struct nil)))
 (define-alien-type hdc (* (struct nil)))
-(define-alien-type wndproc (* (function int int unsigned-int unsigned-int unsigned-int)))
+(define-alien-type long-ptr (* long))
+(define-alien-type wndproc
+     (* (function int int unsigned-int unsigned-int unsigned-int)))
+
+(define-alien-type nil
+    (struct menuiteminfo
+       (cbsize unsigned-int)
+       (menufmask unsigned-int)
+       (ftype unsigned-int)
+       (fstate unsigned-int)
+       (wid unsigned-int)
+       (hsubmenu hmenu)
+       (hbmpchecked hbitmap)
+       (hbmpunchecked hbitmap)
+       (dwitemdata long-ptr)
+       (dwtypedata c-string)
+       (cch unsigned-int)
+       (hbmpitem hbitmap)))
 
 (define-alien-type nil
     (struct wndclassex
@@ -65,6 +83,7 @@
 
 
 ;; Constants.
+(defconstant wm_create 1)
 (defconstant wm_destroy 2)
 (defconstant wm_paint 15)
 (defconstant wm_keyup 257)
@@ -135,6 +154,24 @@
   (alien-funcall
    (extern-alien "CreateWindowExA" (function hwnd int c-string c-string unsigned-long unsigned-int unsigned-int unsigned-int unsigned-int hwnd hmenu hinstance (* char)))
    0 lpclassname lpwindowname dwstyle x y nwidth nheight hwndparent hmenu hinstance lpparam))
+
+(declaim (inline createmenu))
+(defun createmenu ()
+  (alien-funcall
+    (extern-alien "CreateMenu" (function hwnd))))
+
+(declaim (inline setmenu))
+(defun setmenu (hwnd hmenu)
+  (alien-funcall
+    (extern-alien "SetMenu" (function boolean hwnd hwnd))
+    hwnd hmenu))
+
+(declaim (inline insertmenuitem))
+(defun insertmenuitem (hmenu uint bool menuinfo)
+  (alien-funcall
+    (extern-alien "InsertMenuItemA"
+       (function boolean hwnd unsigned-int boolean (* (struct menuiteminfo))))
+    hmenu uint bool menuinfo))
 
 (declaim (inline showwindow))
 (defun showwindow (hwnd ncmdshow)
@@ -217,5 +254,31 @@
   (alien-funcall
     (extern-alien "MoveToEx" (function int hdc int int int))
     hdc x y 0))
+
+;;---------------------------------------
+(declaim (inline null-pointer))
+(defun null-pointer ()
+  "Construct and return a null pointer."
+  (sb-sys:int-sap 0))
+
+(defun add-menu-item (hmenu text)
+  (with-alien ((menu-entry (struct menuiteminfo)))
+     (let ((size-of-menuiteminfo-struct 44)
+           (mask 50)
+           (null (null-pointer))
+           (mfstring 0))
+                (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
+                (setf (slot menu-entry 'menufmask) mask)
+                (setf (slot menu-entry 'ftype) mfstring)
+                (setf (slot menu-entry 'fstate) 0)
+                (setf (slot menu-entry 'wid) 0)
+                (setf (slot menu-entry 'hsubmenu) null)
+                (setf (slot menu-entry 'hbmpchecked) null)
+                (setf (slot menu-entry 'hbmpunchecked) null)
+                (setf (slot menu-entry 'dwitemdata) null)
+                (setf (slot menu-entry 'dwtypedata) text)
+                (setf (slot menu-entry 'cch) (length text))
+                (setf (slot menu-entry 'hbmpitem) null)
+                (insertmenuitem hmenu 100 nil (addr menu-entry)))))
 
 ;;; EOF

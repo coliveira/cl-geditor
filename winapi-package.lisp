@@ -6,7 +6,6 @@
 
 (defpackage :winapi (:use :common-lisp :sb-alien)
 	    (:export
-
 	     ;; Base types
 	     #:hgdiobj
 	     #:atom
@@ -53,6 +52,7 @@
 	     #:pt
 
 	     ;; Constants
+	     #:wm_create
 	     #:wm_destroy
 	     #:wm_paint
 	     #:wm_lbuttondown
@@ -76,6 +76,9 @@
 	     #:unregisterclass
 	     #:loadcursor
 	     #:loadicon
+	     #:createmenu
+	     #:insertmenuitem
+	     #:setmenu
 	     #:createwindow
 	     #:showwindow
 	     #:updatewindow
@@ -93,6 +96,9 @@
 	     #:drawtext
 	     #:lineto
 	     #:moveto
+
+        ;; my functions
+	     #:add-menu-item 
 	     ))
 
 ;;; EOF

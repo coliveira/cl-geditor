@@ -73,8 +73,15 @@
   ;(updatewindow hwnd))
 
 
+(defun on-window-create (hwnd)
+  (let ((menu (createmenu)))
+    (format t "menu created~%")
+    (add-menu-item menu "aaaa")
+    (setmenu hwnd menu)))
+
 (defun window-procedure (hwnd imsg wparam lparam)
   (cond
+    ((= imsg wm_create)  (on-window-create hwnd) 0)
     ((= imsg wm_paint)   (on-window-paint hwnd lparam) 0)
    ;((= imsg wm_keyup)   (postquitmessage 0) 0)
    ;((= imsg wm_lbuttondown) (messagebox hwnd "test" "gedit" 0) 0)
@@ -120,13 +127,10 @@
 
 (defun message-loop ()
   (with-alien ((msg (struct msg)))
-              (defvar result)
               (loop until (zerop (getmessage (addr msg) nil 0 0))
                     do (progn
                          (translatemessage (addr msg))
-                         (dispatchmessage (addr msg))))
-              ;(slot msg 'wparam)
-              ))
+                         (dispatchmessage (addr msg))))))
 
 (defun main ()
   (register-window-class)
