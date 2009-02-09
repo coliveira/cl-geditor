@@ -1,2 +1,6 @@
 This is a simple vector graphics editor written in Common Lisp for
 the win32 platform. It targets the sbcl compiler.
+
+The goal is to write a full featured editor for graphics for win32
+written in common lisp. If might be used in the future to implement
+other types of software.
