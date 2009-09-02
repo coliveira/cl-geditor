@@ -2,8 +2,11 @@
 ;;;
 ;;; graphical editor for windows in Lisp
 ;;;
+; (setf *default-pathname-defaults* #P"c:/co/code/cl-gedit/")
 
+(load "callback-hacking")
 (load "winapi-package")
+(load "win32-types-and-constants")
 (cl:defpackage :geditor-w32
   (:use :common-lisp :winapi :sb-alien)
   (:export #:main))
@@ -72,11 +75,25 @@
   (invalidaterect hwnd nil t))
   ;(updatewindow hwnd))
 
-
 (defun on-window-create (hwnd)
   (let ((menu (createmenu)))
-    (format t "menu created~%")
-    (add-menu-item menu "aaaa")
+    (let ((sub-menu (createmenu)))
+      (add-menu-item sub-menu "Open")
+      (add-menu-item sub-menu "Save")
+      (add-menu-item sub-menu "Save as")
+      (add-menu-item sub-menu "Close")
+      (add-menu-separator sub-menu)
+      (add-menu-item sub-menu "Exit")
+      (add-sub-menu menu "File" sub-menu))
+    (let ((sub-menu (createmenu)))
+      (add-menu-item sub-menu "Copy")
+      (add-menu-item sub-menu "Cut")
+      (add-menu-item sub-menu "Paste")
+      (add-sub-menu menu "Edit" sub-menu))
+    (let ((sub-menu (createmenu)))
+      (add-menu-item sub-menu "Contents")
+      (add-menu-item sub-menu "About")
+      (add-sub-menu menu "Help" sub-menu))
     (setmenu hwnd menu)))
 
 (defun window-procedure (hwnd imsg wparam lparam)
@@ -119,10 +136,10 @@
 (defun create-window ()
   (let ((hwnd (createwindow *window-class-name* *window-title*
 			    ws_overlappedwindow
-			    cw_usedefault cw_usedefault
-			    cw_usedefault cw_usedefault
+			    cw_usedefault 0 500 500
 			    nil nil *default-hinstance* nil)))
     (showwindow hwnd sw_shownormal)
+    (format t "the window is ~a~%" hwnd)
     (updatewindow hwnd)))
 
 (defun message-loop ()
@@ -136,8 +153,4 @@
   (register-window-class)
   (create-window)
   (message-loop)
-  (unregister-window-class)
-  (SB-EXT:QUIT))
-
-(main)
-;;; EOF
+  (unregister-window-class))
