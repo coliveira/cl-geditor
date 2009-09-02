@@ -261,15 +261,19 @@
   "Construct and return a null pointer."
   (sb-sys:int-sap 0))
 
+(defvar MIIM_SUBMENU 4)
+(defvar MIIM_STRING 64)
+
+(defvar MFT_STRING 0)
+
 (defun add-menu-item (hmenu text)
   (with-alien ((menu-entry (struct menuiteminfo)))
      (let ((size-of-menuiteminfo-struct 44)
            (mask 50)
-           (null (null-pointer))
-           (mfstring 0))
+           (null (null-pointer)))
                 (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
                 (setf (slot menu-entry 'menufmask) mask)
-                (setf (slot menu-entry 'ftype) mfstring)
+                (setf (slot menu-entry 'ftype) MFT_STRING)
                 (setf (slot menu-entry 'fstate) 0)
                 (setf (slot menu-entry 'wid) 0)
                 (setf (slot menu-entry 'hsubmenu) null)
@@ -281,4 +285,29 @@
                 (setf (slot menu-entry 'hbmpitem) null)
                 (insertmenuitem hmenu 100 nil (addr menu-entry)))))
 
+(defun add-menu-separator (hmenu)
+  (with-alien ((menu-entry (struct menuiteminfo)))
+     (let ((size-of-menuiteminfo-struct 44)
+           (mask 256)
+           (null (null-pointer))
+           (mfseparator 2048))
+                (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
+                (setf (slot menu-entry 'menufmask) mask)
+                (setf (slot menu-entry 'ftype) mfseparator)
+                (insertmenuitem hmenu 100 nil (addr menu-entry)))))
+
+
+(defun add-sub-menu (hmenu text new-menu)
+  (with-alien ((menu-entry (struct menuiteminfo)))
+     (let ((size-of-menuiteminfo-struct 44)
+           (mask (logior MIIM_SUBMENU MIIM_STRING))
+           (null (null-pointer)))
+                (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
+                (setf (slot menu-entry 'menufmask) mask)
+                (setf (slot menu-entry 'ftype) MFT_STRING)
+                (setf (slot menu-entry 'hsubmenu) (cast new-menu hmenu))
+                (setf (slot menu-entry 'dwtypedata) text)
+                (setf (slot menu-entry 'cch) (length text))
+                (insertmenuitem hmenu 100 nil (addr menu-entry))
+                )))
 ;;; EOF
