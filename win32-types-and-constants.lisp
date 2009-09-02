@@ -86,7 +86,9 @@
 (defconstant wm_create 1)
 (defconstant wm_destroy 2)
 (defconstant wm_paint 15)
+(defconstant wm_close 16)
 (defconstant wm_keyup 257)
+(defconstant wm_command 273)
 (defconstant wm_lbuttondown #x201)
 (defconstant cs_hredraw 2)
 (defconstant cs_vredraw 1)
@@ -109,6 +111,14 @@
   (alien-funcall
    (extern-alien "PostQuitMessage" (function void int))
    nexitcode))
+
+(declaim (inline sendmessage))
+(defun sendmessage (hwnd msg wparam lparam)
+  (alien-funcall
+    (extern-alien "SendMessageA" 
+                  (function boolean hwnd unsigned-int unsigned-long unsigned-long))
+    hwnd msg wparam lparam))
+
 
 (declaim (inline messagebox))
 (defun messagebox (hwnd text caption flags)
@@ -263,10 +273,11 @@
 
 (defvar MIIM_SUBMENU 4)
 (defvar MIIM_STRING 64)
+(defvar MIIM_ID 2)
 
 (defvar MFT_STRING 0)
 
-(defun add-menu-item (hmenu text)
+(defun add-menu-item (hmenu id-num text)
   (with-alien ((menu-entry (struct menuiteminfo)))
      (let ((size-of-menuiteminfo-struct 44)
            (mask 50)
@@ -275,7 +286,7 @@
                 (setf (slot menu-entry 'menufmask) mask)
                 (setf (slot menu-entry 'ftype) MFT_STRING)
                 (setf (slot menu-entry 'fstate) 0)
-                (setf (slot menu-entry 'wid) 0)
+                (setf (slot menu-entry 'wid) id-num)
                 (setf (slot menu-entry 'hsubmenu) null)
                 (setf (slot menu-entry 'hbmpchecked) null)
                 (setf (slot menu-entry 'hbmpunchecked) null)
@@ -283,7 +294,7 @@
                 (setf (slot menu-entry 'dwtypedata) text)
                 (setf (slot menu-entry 'cch) (length text))
                 (setf (slot menu-entry 'hbmpitem) null)
-                (insertmenuitem hmenu 100 nil (addr menu-entry)))))
+                (insertmenuitem hmenu id-num nil (addr menu-entry)))))
 
 (defun add-menu-separator (hmenu)
   (with-alien ((menu-entry (struct menuiteminfo)))

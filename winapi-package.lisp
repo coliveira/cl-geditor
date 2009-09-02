@@ -55,8 +55,10 @@
 	     #:wm_create
 	     #:wm_destroy
 	     #:wm_paint
+	     #:wm_close
 	     #:wm_lbuttondown
 	     #:wm_keyup
+	     #:wm_command
 	     #:cs_hredraw
 	     #:cs_vredraw
 	     #:white_brush
@@ -72,6 +74,7 @@
 	     ;; User32 Functions
 	     #:postquitmessage
 	     #:defwindowproc
+        #:sendmessage 
 	     #:registerclassex
 	     #:unregisterclass
 	     #:loadcursor

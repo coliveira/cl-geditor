@@ -48,6 +48,7 @@
 (defvar *point1* (make-my-point :x 10 :y 10))
 (defvar *point2* (make-my-point :x 100 :y 100))
 
+
 (defun set-point-from-windows-msg (lparam point)
   "lparam is a 32 bit value encoding two 16 bit words.
   we create a point from lparam using these two words."
@@ -76,30 +77,44 @@
   ;(updatewindow hwnd))
 
 (defun on-window-create (hwnd)
+  "create and attach a menu for the application"
   (let ((menu (createmenu)))
     (let ((sub-menu (createmenu)))
-      (add-menu-item sub-menu "Open")
-      (add-menu-item sub-menu "Save")
-      (add-menu-item sub-menu "Save as")
-      (add-menu-item sub-menu "Close")
+      (add-menu-item sub-menu 100 "Open")
+      (add-menu-item sub-menu 102 "Save")
+      (add-menu-item sub-menu 103 "Save as")
+      (add-menu-item sub-menu 104 "Close")
       (add-menu-separator sub-menu)
-      (add-menu-item sub-menu "Exit")
+      (add-menu-item sub-menu 105 "Exit")
       (add-sub-menu menu "File" sub-menu))
     (let ((sub-menu (createmenu)))
-      (add-menu-item sub-menu "Copy")
-      (add-menu-item sub-menu "Cut")
-      (add-menu-item sub-menu "Paste")
+      (add-menu-item sub-menu 200 "Copy")
+      (add-menu-item sub-menu 201 "Cut")
+      (add-menu-item sub-menu 202 "Paste")
       (add-sub-menu menu "Edit" sub-menu))
     (let ((sub-menu (createmenu)))
-      (add-menu-item sub-menu "Contents")
-      (add-menu-item sub-menu "About")
+      (add-menu-item sub-menu 300 "Contents")
+      (add-menu-item sub-menu 301 "About")
       (add-sub-menu menu "Help" sub-menu))
     (setmenu hwnd menu)))
+
+(defun get-hi-lo-word (wparam)
+  "wparam is a 32 bit value encoding two 16 bit words.
+  return these values as a result"
+  (let ((s 16))
+    (values (mod wparam #x10000) (ash wparam (- s))))) 
+
+(defun on-command (hwnd wparam lparam)
+  (multiple-value-bind (cmd-id event) (get-hi-lo-word wparam)
+    (cond
+      ((= cmd-id 105) (sendmessage hwnd wm_close 0 0) 0)
+      (t (defwindowproc hwnd imsg wparam lparam)))))
 
 (defun window-procedure (hwnd imsg wparam lparam)
   (cond
     ((= imsg wm_create)  (on-window-create hwnd) 0)
     ((= imsg wm_paint)   (on-window-paint hwnd lparam) 0)
+    ((= imsg wm_command) (on-command hwnd wparam lparam) 0)
    ;((= imsg wm_keyup)   (postquitmessage 0) 0)
    ;((= imsg wm_lbuttondown) (messagebox hwnd "test" "gedit" 0) 0)
     ((= imsg wm_lbuttondown) (on-mouse-down hwnd lparam) 0)
