@@ -99,6 +99,8 @@
 
         ;; my functions
 	     #:add-menu-item 
+	     #:add-menu-separator
+	     #:add-sub-menu 
 	     ))
 
 ;;; EOF
