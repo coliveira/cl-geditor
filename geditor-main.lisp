@@ -108,7 +108,7 @@
   (multiple-value-bind (cmd-id event) (get-hi-lo-word wparam)
     (cond
       ((= cmd-id 105) (sendmessage hwnd wm_close 0 0) 0)
-      (t (defwindowproc hwnd imsg wparam lparam)))))
+      (t (defwindowproc hwnd wm_command wparam lparam)))))
 
 (defun window-procedure (hwnd imsg wparam lparam)
   (cond
@@ -148,12 +148,16 @@
 (defun unregister-window-class ()
   (unregisterclass *window-class-name* *default-hinstance*))
 
+(defvar *w*) ; handle for the window (useful for debugging)
+(defun dbg-close () (sendmessage *w* wm_destroy 0 0)) ; (useful for debugging)
+
 (defun create-window ()
   (let ((hwnd (createwindow *window-class-name* *window-title*
 			    ws_overlappedwindow
 			    cw_usedefault 0 500 500
 			    nil nil *default-hinstance* nil)))
     (showwindow hwnd sw_shownormal)
+    (setf *w* hwnd)
     (format t "the window is ~a~%" hwnd)
     (updatewindow hwnd)))
 

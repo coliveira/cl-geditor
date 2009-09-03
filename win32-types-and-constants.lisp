@@ -277,6 +277,9 @@
 
 (defvar MFT_STRING 0)
 
+(defparameter +large-pos+ 1000)
+(defparameter +by-position+ t)
+
 (defun add-menu-item (hmenu id-num text)
   (with-alien ((menu-entry (struct menuiteminfo)))
      (let ((size-of-menuiteminfo-struct 44)
@@ -294,7 +297,7 @@
                 (setf (slot menu-entry 'dwtypedata) text)
                 (setf (slot menu-entry 'cch) (length text))
                 (setf (slot menu-entry 'hbmpitem) null)
-                (insertmenuitem hmenu id-num nil (addr menu-entry)))))
+                (insertmenuitem hmenu +large-pos+ +by-position+ (addr menu-entry)))))
 
 (defun add-menu-separator (hmenu)
   (with-alien ((menu-entry (struct menuiteminfo)))
@@ -305,7 +308,7 @@
                 (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
                 (setf (slot menu-entry 'menufmask) mask)
                 (setf (slot menu-entry 'ftype) mfseparator)
-                (insertmenuitem hmenu 100 nil (addr menu-entry)))))
+                (insertmenuitem hmenu +large-pos+ +by-position+ (addr menu-entry)))))
 
 
 (defun add-sub-menu (hmenu text new-menu)
@@ -319,6 +322,5 @@
                 (setf (slot menu-entry 'hsubmenu) (cast new-menu hmenu))
                 (setf (slot menu-entry 'dwtypedata) text)
                 (setf (slot menu-entry 'cch) (length text))
-                (insertmenuitem hmenu 100 nil (addr menu-entry))
-                )))
+                (insertmenuitem hmenu +large-pos+ +by-position+ (addr menu-entry)))))
 ;;; EOF
