@@ -38,48 +38,48 @@
 
 (define-alien-type nil
     (struct wndclassex
-	    (cbsize unsigned-int)
-	    (style unsigned-int)
-	    (lpfnwndproc wndproc)
-	    (cbclsextra int)
-	    (cbwndextra int)
-	    (hinstance hinstance)
-	    (hicon hicon)
-	    (hcursor hcursor)
-	    (hbrbackground hbrush)
-	    (lpszmenuname c-string)
-	    (lpszclassname c-string)
-	    (hiconsm hicon)))
+            (cbsize unsigned-int)
+            (style unsigned-int)
+            (lpfnwndproc wndproc)
+            (cbclsextra int)
+            (cbwndextra int)
+            (hinstance hinstance)
+            (hicon hicon)
+            (hcursor hcursor)
+            (hbrbackground hbrush)
+            (lpszmenuname c-string)
+            (lpszclassname c-string)
+            (hiconsm hicon)))
 
 (define-alien-type nil
     (struct point
-	    (x long)
-	    (y long)))
+            (x long)
+            (y long)))
 
 (define-alien-type nil
     (struct rect
-	    (left long)
-	    (top long)
-	    (right long)
-	    (bottom long)))
+            (left long)
+            (top long)
+            (right long)
+            (bottom long)))
 
 (define-alien-type nil
     (struct paintstruct
-	    (hdc hdc)
-	    (ferase (boolean 32))
-	    (rcpaint (struct rect))
-	    (frestore (boolean 32))
-	    (fincupdate (boolean 32))
-	    (rgbreserved (array char 32))))
+            (hdc hdc)
+            (ferase (boolean 32))
+            (rcpaint (struct rect))
+            (frestore (boolean 32))
+            (fincupdate (boolean 32))
+            (rgbreserved (array char 32))))
 
 (define-alien-type nil
     (struct msg
-	    (hwnd hwnd)
-	    (msg unsigned-int)
-	    (wparam unsigned-int)
-	    (lparam unsigned-long)
-	    (time unsigned-long)
-	    (pt (struct point))))
+            (hwnd hwnd)
+            (msg unsigned-int)
+            (wparam unsigned-int)
+            (lparam unsigned-long)
+            (time unsigned-long)
+            (pt (struct point))))
 
 
 ;; Constants.
@@ -115,7 +115,7 @@
 (declaim (inline sendmessage))
 (defun sendmessage (hwnd msg wparam lparam)
   (alien-funcall
-    (extern-alien "SendMessageA" 
+    (extern-alien "SendMessageA"
                   (function boolean hwnd unsigned-int unsigned-long unsigned-long))
     hwnd msg wparam lparam))
 
@@ -160,10 +160,14 @@
 
 ;; Yes, CreateWindowExA. Backwards compatability.
 (declaim (inline createwindow))
-(defun createwindow (lpclassname lpwindowname dwstyle x y nwidth nheight hwndparent hmenu hinstance lpparam)
+(defun createwindow (lpclassname lpwindowname dwstyle x y nwidth
+nheight hwndparent hmenu hinstance lpparam)
   (alien-funcall
-   (extern-alien "CreateWindowExA" (function hwnd int c-string c-string unsigned-long unsigned-int unsigned-int unsigned-int unsigned-int hwnd hmenu hinstance (* char)))
-   0 lpclassname lpwindowname dwstyle x y nwidth nheight hwndparent hmenu hinstance lpparam))
+   (extern-alien "CreateWindowExA" (function hwnd int c-string
+c-string unsigned-long unsigned-int unsigned-int unsigned-int
+unsigned-int hwnd hmenu hinstance (* char)))
+   0 lpclassname lpwindowname dwstyle x y nwidth nheight hwndparent
+hmenu hinstance lpparam))
 
 (declaim (inline createmenu))
 (defun createmenu ()
@@ -206,7 +210,8 @@
 (declaim (inline getmessage))
 (defun getmessage (lpmsg hwnd wmsgfiltermin wmsgfiltermax)
   (alien-funcall
-   (extern-alien "GetMessageA" (function int (* (struct msg)) hwnd unsigned-int unsigned-int))
+   (extern-alien "GetMessageA" (function int (* (struct msg)) hwnd
+unsigned-int unsigned-int))
    lpmsg hwnd wmsgfiltermin wmsgfiltermax))
 
 (declaim (inline translatemessage))
@@ -265,6 +270,12 @@
     (extern-alien "MoveToEx" (function int hdc int int int))
     hdc x y 0))
 
+(declaim (inline rectangle))
+(defun rectangle (hdc x1 y1 x2 y2)
+  (alien-funcall
+    (extern-alien "Rectangle" (function int hdc int int int int))
+    hdc x1 y1 x2 y2))
+
 ;;---------------------------------------
 (declaim (inline null-pointer))
 (defun null-pointer ()
@@ -303,7 +314,6 @@
   (with-alien ((menu-entry (struct menuiteminfo)))
      (let ((size-of-menuiteminfo-struct 44)
            (mask 256)
-           (null (null-pointer))
            (mfseparator 2048))
                 (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
                 (setf (slot menu-entry 'menufmask) mask)
@@ -314,8 +324,7 @@
 (defun add-sub-menu (hmenu text new-menu)
   (with-alien ((menu-entry (struct menuiteminfo)))
      (let ((size-of-menuiteminfo-struct 44)
-           (mask (logior MIIM_SUBMENU MIIM_STRING))
-           (null (null-pointer)))
+           (mask (logior MIIM_SUBMENU MIIM_STRING)))
                 (setf (slot menu-entry 'cbsize) size-of-menuiteminfo-struct)
                 (setf (slot menu-entry 'menufmask) mask)
                 (setf (slot menu-entry 'ftype) MFT_STRING)
